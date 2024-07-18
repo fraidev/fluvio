@@ -17,12 +17,6 @@ setup_file() {
 
 # Create topic
 @test "Create a topic" {
-    if [ "$FLUVIO_CLI_RELEASE_CHANNEL" == "stable" ]; then
-        skip "don't run on fluvio cli stable version"
-    fi
-    if [ "$FLUVIO_CLUSTER_RELEASE_CHANNEL" == "stable" ]; then
-        skip "don't run on cluster stable version"
-    fi
     debug_msg "Topic name: $TOPIC_NAME"
     run timeout 15s "$FLUVIO_BIN" topic create "$TOPIC_NAME"
     assert_success
@@ -30,12 +24,6 @@ setup_file() {
 
 # Add partitions to topic
 @test "Add 2 new partitions to the topic" {
-    if [ "$FLUVIO_CLI_RELEASE_CHANNEL" == "stable" ]; then
-        skip "don't run on fluvio cli stable version"
-    fi
-    if [ "$FLUVIO_CLUSTER_RELEASE_CHANNEL" == "stable" ]; then
-        skip "don't run on cluster stable version"
-    fi
     debug_msg "Add partitions to topic"
     run timeout 15s "$FLUVIO_BIN" topic add-partition "$TOPIC_NAME" -c 2
 
@@ -52,12 +40,6 @@ setup_file() {
 
 # List partitions
 @test "List partitions should have 3 partitions" {
-    if [ "$FLUVIO_CLI_RELEASE_CHANNEL" == "stable" ]; then
-        skip "don't run on fluvio cli stable version"
-    fi
-    if [ "$FLUVIO_CLUSTER_RELEASE_CHANNEL" == "stable" ]; then
-        skip "don't run on cluster stable version"
-    fi
     sleep 2
     debug_msg "List partitions"
     run timeout 15s "$FLUVIO_BIN" partition list
@@ -73,12 +55,6 @@ setup_file() {
 
 # Not found topic
 @test "Add partitions to a topic that doesn't exist" {
-    if [ "$FLUVIO_CLI_RELEASE_CHANNEL" == "stable" ]; then
-        skip "don't run on fluvio cli stable version"
-    fi
-    if [ "$FLUVIO_CLUSTER_RELEASE_CHANNEL" == "stable" ]; then
-        skip "don't run on cluster stable version"
-    fi
     debug_msg "Add partitions to a topic that doesn't exist"
     run timeout 15s "$FLUVIO_BIN" topic add-partition "not-exist-topic" -c 2
     assert_output --partial 'topic "not-exist-topic" not found'
@@ -87,13 +63,6 @@ setup_file() {
 
 # Produce must recognize new partitions
 @test "Produce message to new partitions while connected" {
-    if [ "$FLUVIO_CLI_RELEASE_CHANNEL" == "stable" ]; then
-        skip "don't run on fluvio cli stable version"
-    fi
-    if [ "$FLUVIO_CLUSTER_RELEASE_CHANNEL" == "stable" ]; then
-        skip "don't run on cluster stable version"
-    fi
-
     debug_msg "Produce message to actual partitions, then wait the new one and produce to it"
     run bash -c '/usr/bin/expect << EOF
     spawn "$FLUVIO_BIN" produce "$TOPIC_NAME"
@@ -132,13 +101,6 @@ setup_file() {
 
 # Delete topic
 @test "Delete topic must delete all partitions" {
-    if [ "$FLUVIO_CLI_RELEASE_CHANNEL" == "stable" ]; then
-        skip "don't run on fluvio cli stable version"
-    fi
-    if [ "$FLUVIO_CLUSTER_RELEASE_CHANNEL" == "stable" ]; then
-        skip "don't run on cluster stable version"
-    fi
-
     debug_msg "Delete topic"
     run timeout 15s "$FLUVIO_BIN" topic delete "$TOPIC_NAME"
     assert_success
