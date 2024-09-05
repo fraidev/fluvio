@@ -5,7 +5,9 @@ use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::hash::Hash;
 
+use tracing::instrument;
 use tracing::trace;
+use tracing::warn;
 use tracing::{debug, error};
 use async_lock::RwLock;
 use async_lock::RwLockReadGuard;
@@ -213,7 +215,9 @@ where
     /// any objects not in incoming list will be deleted
     /// after sync operation, prior history will be removed and any subsequent
     /// change query will return full list instead of changes
+    #[instrument]
     pub async fn sync_all(&self, incoming_changes: Vec<MetadataStoreObject<S, C>>) -> SyncStatus {
+        warn!("sync_all");
         let (mut add, mut update_spec, mut update_status, mut update_meta, mut delete) =
             (0, 0, 0, 0, 0);
 
@@ -279,7 +283,11 @@ where
 
         drop(write_guard);
 
+        warn!("sync_all droped");
+
         self.event_publisher.store_change(epoch);
+
+        warn!("sync_all event published");
 
         debug!(
             "Sync all: <{}:{}> [add:{}, mod_spec:{}, mod_status: {}, mod_meta: {}, del:{}], ",
@@ -300,7 +308,9 @@ where
     /// epoch will be only incremented if there are actual changes
     /// which means this is idempotent operations.
     /// same add result in only 1 single epoch increase.
+    #[instrument]
     pub async fn apply_changes(&self, changes: Vec<LSUpdate<S, C>>) -> Option<SyncStatus> {
+        warn!("apply changes");
         let (mut add, mut update_spec, mut update_status, mut update_meta, mut delete) =
             (0, 0, 0, 0, 0);
         let mut write_guard = self.write().await;
@@ -368,9 +378,11 @@ where
         };
 
         drop(write_guard);
+        warn!("apply changes dropped");
 
         debug!("notify epoch changed: {}", epoch);
         self.event_publisher.store_change(epoch);
+        warn!("apply changes event published");
 
         debug!(
             "Apply changes {} [add:{},mod_spec:{},mod_status: {},mod_update: {}, del:{},epoch: {}",

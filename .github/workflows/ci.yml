@@ -945,7 +945,6 @@ jobs:
           path: diagnostics*.gz
           retention-days: 1
 
- FIXME: This is disabled until we fix the problem with the test when creating a new topic
   local_upgrade_test:
     name: Upgrade local cluster test on (${{ matrix.run }})
     needs: build_primary_binaries
