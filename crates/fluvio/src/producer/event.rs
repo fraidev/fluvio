@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use async_lock::Mutex;
+use parking_lot::Mutex;
 use event_listener::Event;
 
 /// Handler of events that keep track of the number of occurrences
@@ -21,14 +21,14 @@ impl EventHandler {
         Arc::new(Self::new())
     }
 
-    pub async fn notify(&self) {
-        let mut count = self.count.lock().await;
+    pub fn notify(&self) {
+        let mut count = self.count.lock();
         *count += 1;
         self.event.notify(1);
     }
 
-    async fn try_acquire_notification(&self) -> bool {
-        let mut count = self.count.lock().await;
+    fn try_acquire_notification(&self) -> bool {
+        let mut count = self.count.lock();
         if *count > 0 {
             *count -= 1;
             true
@@ -40,7 +40,7 @@ impl EventHandler {
     pub async fn listen(&self) {
         loop {
             let listener = self.event.listen();
-            if !self.try_acquire_notification().await {
+            if !self.try_acquire_notification() {
                 listener.await;
             } else {
                 break;
@@ -62,12 +62,12 @@ mod test {
             .await
             .is_err());
 
-        event.notify().await;
+        event.notify();
         assert!(async_std::future::timeout(timeout, event.listen())
             .await
             .is_ok());
-        event.notify().await;
-        event.notify().await;
+        event.notify();
+        event.notify();
         assert!(async_std::future::timeout(timeout, event.listen())
             .await
             .is_ok());

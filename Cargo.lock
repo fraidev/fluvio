@@ -2285,6 +2285,7 @@ dependencies = [
  "fluvio_ws_stream_wasm",
  "futures-util",
  "once_cell",
+ "parking_lot 0.12.3",
  "pin-project",
  "semver 1.0.24",
  "serde",

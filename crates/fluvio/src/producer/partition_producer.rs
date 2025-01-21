@@ -104,7 +104,7 @@ where
                         error!("Failed to flush producer: {}", e);
                         self.set_error(e).await;
                     }
-                    flush_event.1.notify().await;
+                    flush_event.1.notify();
                     linger_sleep = None;
 
                 }
@@ -168,7 +168,7 @@ where
 
         let mut batches_ready = vec![];
         {
-            let mut batches = self.batches_lock.batches.lock().await;
+            let mut batches = self.batches_lock.batches.lock();
             while !batches.is_empty() {
                 let ready = force
                     || batches.front().is_some_and(|batch| {

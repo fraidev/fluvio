@@ -170,7 +170,7 @@ impl ProducerPool {
             self.flush_events.iter().zip(self.errors.iter())
         {
             let listener = batch_flushed_event.listen();
-            manual_flush_notifier.notify().await;
+            manual_flush_notifier.notify();
             listener.await;
             {
                 let error_handle = error.read().await;

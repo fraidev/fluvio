@@ -5,7 +5,7 @@ use anyhow::Result;
 use fluvio_sc_schema::partition::PartitionSpec;
 use fluvio_sc_schema::topic::TopicSpec;
 use tracing::{debug, trace, instrument};
-use async_lock::Mutex;
+use parking_lot::Mutex;
 use async_trait::async_trait;
 
 use fluvio_protocol::record::ReplicaKey;
@@ -128,7 +128,7 @@ impl SpuPool for SpuSocketPool {
         leader_id: SpuId,
     ) -> Result<VersionedSerialSocket, FluvioError> {
         // check if already have existing connection to same SPU
-        let mut client_lock = self.spu_clients.lock().await;
+        let mut client_lock = self.spu_clients.lock();
 
         if let Some(spu_socket) = client_lock.get_mut(&leader_id) {
             if !spu_socket.is_stale() {
@@ -215,7 +215,7 @@ impl SpuDirectory for SpuSocketPool {
         let leader_id = partition.spec.leader;
 
         // check if already have existing leader or create new connection to leader
-        let mut client_lock = self.spu_clients.lock().await;
+        let mut client_lock = self.spu_clients.lock();
 
         if let Some(spu_socket) = client_lock.get_mut(&leader_id) {
             return spu_socket

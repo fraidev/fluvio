@@ -7,12 +7,13 @@ use std::time::{Duration, Instant};
 
 use async_channel::Sender;
 use async_lock::RwLock;
+use parking_lot::{Condvar, Mutex, MutexGuard};
 use tracing::trace;
 use futures_util::future::{BoxFuture, Either, Shared};
 use futures_util::{FutureExt, ready};
 
-use fluvio_future::sync::{Mutex, MutexGuard};
-use fluvio_future::sync::Condvar;
+//use fluvio_future::sync::{Mutex, MutexGuard};
+//use fluvio_future::sync::Condvar;
 use fluvio_protocol::record::Batch;
 use fluvio_compression::Compression;
 use fluvio_protocol::record::Offset;
@@ -106,14 +107,14 @@ impl RecordAccumulator {
             .ok_or(ProducerError::PartitionNotFound(partition_id))?;
 
         // Wait for space in the batch queue
-        let mut batches = self.wait_for_space(batches_lock).await?;
+        let mut batches = self.wait_for_space(batches_lock)?;
 
         // If the last batch is not full, push the record to it
         if let Some(batch) = batches.back_mut() {
             match batch.push_record(record) {
                 Ok(ProduceBatchStatus::Added(push_record)) => {
                     if batch.is_full() {
-                        batch_events.notify_batch_full().await;
+                        batch_events.notify_batch_full();
                     }
                     return Ok(PushRecord::new(
                         push_record.into_future_record_metadata(partition_id),
@@ -121,7 +122,7 @@ impl RecordAccumulator {
                 }
                 Ok(ProduceBatchStatus::NotAdded(record)) => {
                     if batch.is_full() {
-                        batch_events.notify_batch_full().await;
+                        batch_events.notify_batch_full();
                     }
 
                     // Create and push a new batch if needed
@@ -151,22 +152,20 @@ impl RecordAccumulator {
         ))
     }
 
-    async fn wait_for_space<'a>(
+    fn wait_for_space<'a>(
         &self,
         batches_lock: &'a Arc<BatchesDeque>,
     ) -> Result<MutexGuard<'a, VecDeque<ProducerBatch>>, ProducerError> {
-        let mut batches = batches_lock.batches.lock().await;
+        let mut batches = batches_lock.batches.lock();
         if batches.len() >= self.queue_size {
-            let (guard, wait_result) = batches_lock
-                .control
-                .wait_timeout_until(batches, RECORD_ENQUEUE_TIMEOUT, |queue| {
-                    queue.len() < self.queue_size
-                })
-                .await;
+            let wait_result = batches_lock.control.wait_while_for(
+                &mut batches,
+                |queue| queue.len() >= self.queue_size,
+                RECORD_ENQUEUE_TIMEOUT,
+            );
             if wait_result.timed_out() {
                 return Err(ProducerError::BatchQueueWaitTimeout);
             }
-            batches = guard;
         }
         Ok(batches)
     }
@@ -190,18 +189,18 @@ impl RecordAccumulator {
 
         match batch.push_record(record) {
             Ok(ProduceBatchStatus::Added(push_record)) => {
-                batch_events.notify_new_batch().await;
+                batch_events.notify_new_batch();
                 if batch.is_full() {
-                    batch_events.notify_batch_full().await;
+                    batch_events.notify_batch_full();
                 }
 
                 batches.push_back(batch);
                 Ok(push_record)
             }
             Ok(ProduceBatchStatus::NotAdded(record)) => {
-                batch_events.notify_new_batch().await;
+                batch_events.notify_new_batch();
                 if batch.is_full() {
-                    batch_events.notify_batch_full().await;
+                    batch_events.notify_batch_full();
                 }
 
                 batches.push_back(batch);
@@ -323,12 +322,12 @@ impl BatchEvents {
         self.new_batch.listen().await
     }
 
-    pub async fn notify_batch_full(&self) {
-        self.batch_full.notify().await;
+    pub fn notify_batch_full(&self) {
+        self.batch_full.notify();
     }
 
-    pub async fn notify_new_batch(&self) {
-        self.new_batch.notify().await;
+    pub fn notify_new_batch(&self) {
+        self.new_batch.notify();
     }
 }
 
