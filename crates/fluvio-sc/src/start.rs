@@ -1,6 +1,6 @@
 use std::{
+    path::{Path, PathBuf},
     sync::Arc,
-    path::{PathBuf, Path},
     time::Duration,
 };
 
@@ -8,15 +8,17 @@ use anyhow::Result;
 use tracing::info;
 
 use fluvio_future::{task::run_block_on, timer::sleep};
-use fluvio_stream_dispatcher::metadata::{SharedClient, MetadataClient, local::LocalMetadataStorage};
-use fluvio_stream_model::{store::k8::K8MetaItem, core::MetadataItem};
-use k8_client::{K8Client, K8Config, memory::MemoryClient};
+use fluvio_stream_dispatcher::metadata::{
+    local::LocalMetadataStorage, MetadataClient, SharedClient,
+};
+use fluvio_stream_model::{core::MetadataItem, store::k8::K8MetaItem};
+use k8_client::{memory::MemoryClient, K8Client, K8Config};
 
 use crate::{
-    cli::{ScOpt, TlsConfig, RunMode},
-    services::auth::basic::BasicRbacPolicy,
+    cli::{RunMode, ScOpt, TlsConfig},
     config::ScConfig,
     config::DEFAULT_NAMESPACE,
+    services::auth::basic::BasicRbacPolicy,
 };
 
 pub fn main_loop(opt: ScOpt) {
@@ -126,8 +128,12 @@ fn local_main_loop<C, M>(
     M: MetadataItem,
     M::UId: Send + Sync,
 {
+
+    // let  rt = tokio::runtime::Runtime::new().unwrap();
     run_block_on(async move {
         info!("starting local main loop");
+
+        // console_subscriber::init();
 
         crate::init::start_main_loop((sc_config.clone(), auth_policy), client).await;
         proxy::start_if(sc_config, tls_option).await;
@@ -144,15 +150,15 @@ mod proxy {
     use std::process;
     use tracing::info;
 
-    use fluvio_types::print_cli_err;
     pub use fluvio_future::openssl::TlsAcceptor;
+    use fluvio_types::print_cli_err;
 
     use fluvio_auth::x509::X509Authenticator;
     use flv_tls_proxy::{
         start as proxy_start, start_with_authenticator as proxy_start_with_authenticator,
     };
 
-    use crate::{config::ScConfig, cli::TlsConfig};
+    use crate::{cli::TlsConfig, config::ScConfig};
 
     pub async fn start_if(sc_config: ScConfig, tls_option: Option<(String, TlsConfig)>) {
         if let Some((proxy_port, tls_config)) = tls_option {
@@ -183,9 +189,9 @@ mod proxy {
 }
 
 async fn create_memory_client(path: PathBuf) -> Result<Arc<MemoryClient>> {
-    use std::ops::Deref;
     use fluvio_sc_schema::remote_file::RemoteMetadataFile;
     use k8_client::meta_client::MetadataClient;
+    use std::ops::Deref;
 
     let metadata_file = RemoteMetadataFile::open(path)?;
     let config = metadata_file.deref();

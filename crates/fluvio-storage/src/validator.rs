@@ -269,7 +269,7 @@ mod tests {
     use std::env::temp_dir;
 
     use flv_util::fixture::ensure_new_dir;
-    use futures_lite::io::AsyncWriteExt;
+    use tokio::io::AsyncWriteExt;
 
     use fluvio_protocol::record::Offset;
 

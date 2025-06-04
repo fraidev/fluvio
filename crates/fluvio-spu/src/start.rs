@@ -4,12 +4,12 @@ use fluvio_auth::root::RootAuthorization;
 use fluvio_storage::FileReplica;
 
 use crate::config::{SpuConfig, SpuOpt};
+use crate::control_plane::ScDispatcher;
+use crate::core::DefaultSharedGlobalContext;
+use crate::core::GlobalContext;
 use crate::services::auth::SpuAuthGlobalContext;
 use crate::services::create_internal_server;
 use crate::services::public::create_public_server;
-use crate::core::DefaultSharedGlobalContext;
-use crate::core::GlobalContext;
-use crate::control_plane::ScDispatcher;
 
 type FileReplicaContext = GlobalContext<FileReplica>;
 
@@ -44,7 +44,9 @@ pub fn main_loop(opt: SpuOpt) {
     info!(available_memory = sys.available_memory(), "System");
     info!(uptime = System::uptime(), "Uptime in secs");
 
+    // let rt = tokio::runtime::Runtime::new().unwrap();
     run_block_on(async move {
+        console_subscriber::init();
         let ctx = create_services(spu_config.clone(), true, true);
 
         init_monitoring(ctx);
@@ -96,9 +98,9 @@ mod proxy {
     use std::process;
     use tracing::info;
 
-    use flv_util::print_cli_err;
     use fluvio_future::openssl::TlsAcceptor;
     use flv_tls_proxy::start as proxy_start;
+    use flv_util::print_cli_err;
 
     use crate::config::SpuConfig;
 

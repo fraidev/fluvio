@@ -32,7 +32,7 @@ futures-util = { workspace = true, features = ["sink"] }
 async-trait = { workspace = true }
 serde = { workspace = true,  features = ['derive'] }
 serde_json = { workspace = true }
-tokio = { workspace = true, features = ["macros"] }
+tokio = { workspace = true, features = ["full"] }
 async-channel = { workspace = true }
 async-lock = { workspace = true }
 async-io = { workspace = true }
@@ -41,6 +41,7 @@ once_cell = { workspace = true }
 sysinfo = { workspace = true }
 chrono = { workspace = true }
 mimalloc = { workspace = true }
+console-subscriber = { version = "0.4.1"}
 
 # Fluvio dependencies
 fluvio = { workspace = true }
@@ -57,7 +58,7 @@ fluvio-service = { workspace = true }
 flv-tls-proxy = { workspace = true }
 flv-util = { workspace = true }
 fluvio-future = { workspace = true,features = [
-    "subscriber",
+    # "subscriber",
     "openssl_tls",
     "zero_copy",
 ] }
@@ -74,5 +75,8 @@ portpicker = { workspace = true }
 rand = { workspace = true }
 
 flv-util = { workspace = true, features = ["fixture"] }
-fluvio-future = { workspace = true,features = ["fixture", "subscriber"] }
+fluvio-future = { workspace = true,features = ["fixture"
+	# , 
+	# "subscriber"
+] }
 fluvio-protocol = { workspace = true,  features = ["fixture"] }

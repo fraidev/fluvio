@@ -364,7 +364,7 @@ fn get_hubref() -> Option<String> {
     }
     let hubref_path = super::HUB_REF_ENDPOINT;
     let hubref_url = format!("{fcremote}{hubref_path}");
-    let reply: anyhow::Result<String> = run_block_on(async {
+    let reply: anyhow::Result<String> = run_block_on(async move {
         let resp = htclient::get(&hubref_url)
             .await
             .map_err(|e| anyhow!("hubref error {e}"))?;

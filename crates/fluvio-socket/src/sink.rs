@@ -196,7 +196,8 @@ mod file {
                                     });
                                     (read_size, buf)
                                 })
-                                .await;
+                                .await
+                                .map_err(|_err| SocketError::SocketClosed)?;
 
                                 let read = read_result?;
                                 buf.resize(read, 0);

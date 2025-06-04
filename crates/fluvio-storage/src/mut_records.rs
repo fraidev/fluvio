@@ -1,6 +1,5 @@
 use std::io::Error as IoError;
 use std::io::Write;
-use std::os::fd::OwnedFd;
 use std::os::unix::prelude::AsRawFd;
 use std::os::unix::prelude::FromRawFd;
 use std::path::PathBuf;
@@ -10,10 +9,10 @@ use std::time::Instant;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
 
+use tokio::io::AsyncWriteExt;
 use tracing::info;
 use tracing::instrument;
 use tracing::{debug, trace};
-use futures_lite::io::AsyncWriteExt;
 use async_channel::Sender;
 use anyhow::Result;
 
@@ -216,7 +215,7 @@ impl FileRecords for MutFileRecords {
     }
 
     fn file(&self) -> File {
-        unsafe { File::from(<OwnedFd as FromRawFd>::from_raw_fd(self.file.as_raw_fd())) }
+        unsafe { File::from_raw_fd(self.file.as_raw_fd()) }
     }
 }
 

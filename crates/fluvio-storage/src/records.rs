@@ -118,7 +118,7 @@ impl FileRecordsSlice {
 
 impl FileRecords for FileRecordsSlice {
     fn file(&self) -> File {
-        unsafe { File::from(<OwnedFd as FromRawFd>::from_raw_fd(self.file.as_raw_fd())) }
+        unsafe { File::from_raw_fd(self.file.as_raw_fd()) }
     }
 
     fn get_base_offset(&self) -> Offset {
