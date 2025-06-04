@@ -12,7 +12,7 @@ use event_listener::Event;
 use web_time::Instant;
 
 use async_channel::Sender;
-use async_lock::RwLock;
+use tokio::sync::RwLock;
 use tracing::trace;
 use futures_util::future::{BoxFuture, Either, Shared};
 use futures_util::{FutureExt, ready};

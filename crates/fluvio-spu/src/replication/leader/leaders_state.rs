@@ -1,5 +1,5 @@
 use std::ops::Deref;
-use async_lock::RwLock;
+use tokio::sync::RwLock;
 use fluvio_controlplane::replica::Replica;
 use fluvio_types::defaults::CONSUMER_REPLICA_KEY;
 use std::collections::HashMap;

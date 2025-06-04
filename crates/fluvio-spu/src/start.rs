@@ -44,9 +44,8 @@ pub fn main_loop(opt: SpuOpt) {
     info!(available_memory = sys.available_memory(), "System");
     info!(uptime = System::uptime(), "Uptime in secs");
 
-    // let rt = tokio::runtime::Runtime::new().unwrap();
     run_block_on(async move {
-        console_subscriber::init();
+        // console_subscriber::init();
         let ctx = create_services(spu_config.clone(), true, true);
 
         init_monitoring(ctx);

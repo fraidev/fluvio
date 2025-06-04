@@ -2762,6 +2762,7 @@ name = "fluvio-future"
 version = "0.8.0"
 dependencies = [
  "anyhow",
+ "async-global-executor",
  "async-native-tls",
  "async-net",
  "async-trait",
@@ -3234,7 +3235,6 @@ dependencies = [
 name = "fluvio-stream-model"
 version = "0.11.6"
 dependencies = [
- "async-lock",
  "event-listener",
  "fluvio-future 0.8.0",
  "k8-types",

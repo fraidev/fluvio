@@ -16,7 +16,7 @@ use std::future::Future;
 use async_channel::bounded;
 use async_channel::Receiver;
 use async_channel::Sender;
-use async_lock::Mutex;
+use tokio::sync::Mutex;
 use bytes::Bytes;
 use event_listener::Event;
 use futures_util::ready;
@@ -186,7 +186,7 @@ impl MultiplexerSocket {
                 senders.remove(&correlation_id);
                 drop(senders);
 
-                match msg.try_lock() {
+                match msg.try_lock().ok() {
                     Some(guard) => {
 
                         if let Some(response_bytes) =  &*guard {
@@ -459,7 +459,7 @@ impl MultiPlexingResponseDispatcher {
                 SharedSender::Serial(serial_sender) => {
                     trace!("found serial");
                     // this should always succeed since nobody should lock
-                    match serial_sender.0.try_lock() {
+                    match serial_sender.0.try_lock().ok() {
                         Some(mut guard) => {
                             *guard = Some(msg);
                             drop(guard); // unlock

@@ -5,7 +5,7 @@ use std::{
 };
 
 use async_channel::{Receiver, Sender};
-use async_lock::RwLock;
+use tokio::sync::RwLock;
 use fluvio::ProduceCompletionBatchEvent;
 use fluvio_future::task::spawn;
 use hdrhistogram::Histogram;

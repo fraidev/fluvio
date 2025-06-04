@@ -18,7 +18,8 @@ fixture = ["serde"]
 fixtures = []
 
 [dependencies]
-async-lock = { workspace = true }
+# async-lock = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
 event-listener = { workspace = true }
 once_cell = { workspace = true }
 serde = { workspace = true, features = ['derive'], optional = true }

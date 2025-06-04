@@ -14,7 +14,7 @@ use adaptive_backoff::prelude::{
 };
 use anyhow::Result;
 use async_channel::Sender;
-use async_lock::Mutex;
+use tokio::sync::Mutex;
 use fluvio_future::timer::sleep;
 use fluvio_socket::VersionedSerialSocket;
 use fluvio_spu_schema::server::consumer_offset::{

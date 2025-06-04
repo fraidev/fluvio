@@ -7,7 +7,7 @@ use anyhow::Result;
 use adaptive_backoff::prelude::{
     Backoff, BackoffBuilder, ExponentialBackoff, ExponentialBackoffBuilder,
 };
-use async_lock::Mutex;
+use tokio::sync::Mutex;
 use async_trait::async_trait;
 use fluvio_socket::ClientConfig;
 use fluvio_types::defaults::{
@@ -101,7 +101,7 @@ pub trait ReconnectStrategy: Send + Sync {
         inner: &ConsumerRetryInner,
         new_config: ConsumerConfigExt,
         backoff: ExponentialBackoff,
-    ) -> Result<Arc<async_lock::Mutex<BoxConsumerStream>>>;
+    ) -> Result<Arc<tokio::sync::Mutex<BoxConsumerStream>>>;
 }
 
 /// A default reconnect strategy that uses the Fluvio client to reconnect.
@@ -115,7 +115,7 @@ impl ReconnectStrategy for DefaultReconnectStrategy {
         inner: &ConsumerRetryInner,
         new_config: ConsumerConfigExt,
         mut backoff: ExponentialBackoff,
-    ) -> Result<Arc<async_lock::Mutex<BoxConsumerStream>>> {
+    ) -> Result<Arc<tokio::sync::Mutex<BoxConsumerStream>>> {
         info!(target: SPAN_RETRY, "Reconnecting to stream consumer");
         let fluvio_client = Fluvio::connect_with_connector(
             inner.client_config.connector().clone(),
@@ -394,7 +394,7 @@ async fn backoff_and_wait(backoff: &mut ExponentialBackoff) {
 mod tests {
     use std::{sync::Arc, vec::IntoIter};
 
-    use async_lock::Mutex;
+    use tokio::sync::Mutex;
     use fluvio_protocol::record::Batch;
     use fluvio_smartmodule::RecordData;
     use fluvio_types::PartitionId;

@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::collections::BTreeMap;
 use std::hash::Hash;
-use async_lock::RwLock;
-use async_lock::RwLockReadGuard;
-use async_lock::RwLockWriteGuard;
+use tokio::sync::RwLock;
+use tokio::sync::RwLockReadGuard;
+use tokio::sync::RwLockWriteGuard;
 
 /// inefficient but simple concurrent hashmap
 /// this should be only used in a test
@@ -78,7 +78,8 @@ where
     }
 
     pub fn try_write(&self) -> Option<RwLockWriteGuard<BTreeMap<K, V>>> {
-        self.0.try_write()
+        //map result to option
+        self.0.try_write().ok()
     }
 
     pub async fn insert(&self, key: K, value: V) -> Option<V> {

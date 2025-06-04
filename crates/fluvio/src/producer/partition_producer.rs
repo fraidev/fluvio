@@ -3,7 +3,7 @@ use std::sync::Arc;
 use adaptive_backoff::prelude::{
     Backoff, BackoffBuilder, ExponentialBackoff, ExponentialBackoffBuilder,
 };
-use async_lock::RwLock;
+use tokio::sync::RwLock;
 use fluvio_types::defaults::{
     RECONNECT_BACKOFF_FACTOR, RECONNECT_BACKOFF_MAX_DURATION, RECONNECT_BACKOFF_MIN_DURATION,
 };
