@@ -241,7 +241,7 @@ cfg_if::cfg_if! {
                 }
             }
         }
-    } else if #[cfg(any(feature = "rustls"))] {
+    } else if #[cfg(feature = "rustls")] {
 
         impl TryFrom<TlsPolicy> for DomainConnector {
             type Error = anyhow::Error;
